@@ -85,7 +85,7 @@ void replaceInFile(const fs::path& path, const std::string& oldName, const std::
     fileOut.close();
 }
 
-void renameProject(const std::string& oldName, const std::string& newName)
+void renameProject(const std::string& oldName, const std::string& oldNamePath, const std::string& newName, const std::string& newNamePath)
 {
     std::string confirm;
     printToConsole("You are about to rename the project '" + oldName + "' to '" + newName + "'. Are you sure? [Y/n]: ");
@@ -97,8 +97,8 @@ void renameProject(const std::string& oldName, const std::string& newName)
         return;
     }
 
-    fs::path oldPath(oldName);
-    fs::path newPath(newName);
+    fs::path oldPath(oldNamePath);
+    fs::path newPath(newNamePath);
 
     // remove old solution file
     fs::path oldSlnPath = oldPath / (oldName + ".sln");
@@ -164,8 +164,12 @@ void renameProject(const std::string& oldName, const std::string& newName)
 
 int main()
 {
+    std::string basePathStr = fs::current_path().string();
+    fs::path basePath;
     std::string oldName;
+    std::string oldNamePath;
     std::string newName;
+    std::string newNamePath;
 
     while (true) {
         printToConsole("=================== Menu ===================", "blue");
@@ -175,7 +179,6 @@ int main()
         printToConsole("\nEnter your choice: ", "green");
 
         int choice;
-        std::cin >> choice;
         if (!(std::cin >> choice)) {
             printToConsole("Invalid option. Please try again.", "red");
             std::cin.clear();  // Clear the error state
@@ -186,13 +189,26 @@ int main()
 
         switch (choice) {
             case 1:
+                printToConsole("Enter the base path [" + std::string(basePathStr) + "]: ", "green");
+                std::getline(std::cin, basePathStr);
+
+                if (basePathStr.empty()) {
+                    basePath = fs::current_path();
+                } else {
+                    basePath = fs::absolute(fs::path(basePathStr));
+                }
                 printToConsole("Enter the old project name: ", "green");
                 std::getline(std::cin, oldName);
+
+                oldNamePath = (basePath / oldName).string();
+
                 printToConsole("Enter the new project name: ", "green");
+
                 std::getline(std::cin, newName);
+                newNamePath = (basePath / newName).string();
 
                 try {
-                    renameProject(oldName, newName);
+                    renameProject(oldName, oldNamePath, newName, newNamePath);
                     printToConsole("Project renamed successfully!", "green");
                 }
                 catch (const std::exception& e) {
@@ -200,8 +216,16 @@ int main()
                 }
                 break;
             case 2:
+                printToConsole("Enter the base path [" + std::string(basePathStr) + "]: ", "green");
+                std::getline(std::cin, basePathStr);
+                if (basePathStr.empty() || basePathStr == "." || basePathStr == "./" || basePathStr == ".\\") {
+                    basePath = fs::current_path();
+                } else {
+                    basePath = fs::absolute(fs::path(basePathStr));
+                }
                 printToConsole("Enter the project name to clean: ", "green");
                 std::getline(std::cin, oldName);
+                oldName = (basePath / oldName).string();
                 try {
                     cleanProject(fs::path(oldName));
                     printToConsole("Project cleaned successfully!", "green");
@@ -215,5 +239,6 @@ int main()
             default:
                 printToConsole("Invalid option. Please try again.", "red");
         }
+
     }
 }
