@@ -3,7 +3,7 @@ project(renameProject)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(renameProject main.cpp)
+add_executable(UEProjectUtility main.cpp)
 
 find_path(TERMCOLOR_INCLUDE_DIRS termcolor/termcolor.hpp)
 
@@ -11,4 +11,4 @@ if(NOT TERMCOLOR_INCLUDE_DIRS)
     message(FATAL_ERROR "Termcolor not found!")
 endif()
 
-target_include_directories(renameProject PRIVATE ${TERMCOLOR_INCLUDE_DIRS})
+target_include_directories(UEProjectUtility PRIVATE ${TERMCOLOR_INCLUDE_DIRS})
