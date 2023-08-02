@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iterator>
 #include <array>
+#include <limits>
 #include <termcolor/termcolor.hpp>
 
 namespace fs = std::filesystem;
@@ -50,6 +51,35 @@ std::string toUpper(const std::string &s)
     return result;
 }
 
+bool validateAndSetPath(fs::path &basePath, const std::string &basePathStr) {
+    if (basePathStr == "") {
+        printToConsole("No path specified. Please try again.", "red");
+        return false;
+    }
+
+    fs::path pathCandidate = fs::absolute(fs::path(basePathStr));
+    if (!fs::exists(pathCandidate)) {
+        printToConsole("The specified path does not exist. Please try again.", "red");
+        return false;
+    }
+    basePath = pathCandidate;
+    return true;
+}
+
+void requestAndProcessInput(const std::string &requestMsg, std::string &input, bool canCancel = false) {
+    while (true) {
+        printToConsole(requestMsg, "green");
+        std::getline(std::cin, input);
+        if (canCancel && toUpper(input) == "C") {
+            throw std::runtime_error("Operation cancelled by user.");
+        }
+        if (input.empty()) {
+            input = fs::current_path().string(); // default to current directory
+        }
+        break;
+    }
+}
+
 void cleanProject(const fs::path& projectPath)
 {
     fs::path slnPath = projectPath.parent_path() / (projectPath.filename().string() + ".sln");
@@ -70,6 +100,16 @@ void cleanProject(const fs::path& projectPath)
     }
 }
 
+bool validateUProject(const fs::path &basePath) {
+    for (const auto & entry : fs::directory_iterator(basePath)) {
+        if (entry.path().extension() == ".uproject") {
+            return true;
+        }
+    }
+    printToConsole("No .uproject file found in the specified directory. Please try again.", "red");
+    return false;
+}
+
 void replaceInFile(const fs::path& path, const std::string& oldName, const std::string& newName)
 {
     std::ifstream fileIn(path);
@@ -85,7 +125,7 @@ void replaceInFile(const fs::path& path, const std::string& oldName, const std::
     fileOut.close();
 }
 
-void renameProject(const std::string& oldName, const std::string& newName)
+void renameProject(const std::string& oldName, const std::string& oldNamePath, const std::string& newName, const std::string& newNamePath)
 {
     std::string confirm;
     printToConsole("You are about to rename the project '" + oldName + "' to '" + newName + "'. Are you sure? [Y/n]: ");
@@ -97,8 +137,8 @@ void renameProject(const std::string& oldName, const std::string& newName)
         return;
     }
 
-    fs::path oldPath(oldName);
-    fs::path newPath(newName);
+    fs::path oldPath(oldNamePath);
+    fs::path newPath(newNamePath);
 
     // remove old solution file
     fs::path oldSlnPath = oldPath / (oldName + ".sln");
@@ -164,8 +204,12 @@ void renameProject(const std::string& oldName, const std::string& newName)
 
 int main()
 {
+    std::string basePathStr = fs::current_path().string();
+    fs::path basePath;
     std::string oldName;
+    std::string oldNamePath;
     std::string newName;
+    std::string newNamePath;
 
     while (true) {
         printToConsole("=================== Menu ===================", "blue");
@@ -175,38 +219,53 @@ int main()
         printToConsole("\nEnter your choice: ", "green");
 
         int choice;
-        std::cin >> choice;
         if (!(std::cin >> choice)) {
             printToConsole("Invalid option. Please try again.", "red");
             std::cin.clear();  // Clear the error state
-            std::cin.ignore(10000, '\n');  // clear input buffer
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             continue;  // Skip the rest of the loop iteration
         }
-        std::cin.ignore(10000, '\n');
+
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
         switch (choice) {
             case 1:
-                printToConsole("Enter the old project name: ", "green");
-                std::getline(std::cin, oldName);
-                printToConsole("Enter the new project name: ", "green");
-                std::getline(std::cin, newName);
-
                 try {
-                    renameProject(oldName, newName);
+                    requestAndProcessInput("Enter the base path (default is " + fs::current_path().string() + "): [C] Cancel", basePathStr, true);
+                    if (!validateAndSetPath(basePath, basePathStr)) {
+                        continue;  // Back to the start of the loop if path validation fails
+                    }
+                    while (true) {
+                        requestAndProcessInput("Enter the old project name: [C] Cancel", oldName, true);
+                        oldNamePath = (basePath / oldName).string();
+                        if (validateUProject(fs::path(oldNamePath))) {
+                            break;  // Exit loop if .uproject validation passes
+                        }
+                    }
+                    requestAndProcessInput("Enter the new project name: [C] Cancel", newName, true);
+                    newNamePath = (basePath / newName).string();
+                    renameProject(oldName, oldNamePath, newName, newNamePath);
                     printToConsole("Project renamed successfully!", "green");
-                }
-                catch (const std::exception& e) {
+                } catch (const std::exception &e) {
                     printToConsole("Error: " + std::string(e.what()), "red");
                 }
                 break;
             case 2:
-                printToConsole("Enter the project name to clean: ", "green");
-                std::getline(std::cin, oldName);
                 try {
-                    cleanProject(fs::path(oldName));
+                    requestAndProcessInput("Enter the base path (default is " + fs::current_path().string() + "): [C] Cancel", basePathStr, true);
+                    if (!validateAndSetPath(basePath, basePathStr)) {
+                        continue;  // Back to the start of the loop if path validation fails
+                    }
+                    while (true) {
+                        requestAndProcessInput("Enter the project name to clean: [C] Cancel", oldName, true);
+                        oldNamePath = (basePath / oldName).string();
+                        if (validateUProject(fs::path(oldNamePath))) {
+                            break;  // Exit loop if .uproject validation passes
+                        }
+                    }
+                    cleanProject(fs::path(oldNamePath));
                     printToConsole("Project cleaned successfully!", "green");
-                }
-                catch (const std::exception& e) {
+                } catch (const std::exception &e) {
                     printToConsole("Error: " + std::string(e.what()), "red");
                 }
                 break;
@@ -215,5 +274,6 @@ int main()
             default:
                 printToConsole("Invalid option. Please try again.", "red");
         }
+
     }
 }
