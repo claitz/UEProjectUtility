@@ -40,7 +40,6 @@ You probably got this, but just in case, you will need to have CMake, any C++17 
 We welcome any community contributions!  
 If you find a bug, have feature requests, or want to contribute to the code, please feel free to open an issue or submit a pull request.
 
-## Aknowledgements
-
+## Acknowledgements
 This tool uses the following libraries:
 - [Termcolor](https://github.com/ikalnytskyi/termcolor)
