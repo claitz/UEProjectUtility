@@ -4,10 +4,14 @@ UEProjectUtility is a C++ based utility tool specifically designed for Unreal En
 ## Features
 1. **Project Renaming**: This tool can assist in renaming Unreal Engine projects, changing references within files to ensure a smooth and error-free transition.
 
-2. **Project Cleaning**: This tool also offers the functionality to clean Unreal Engine projects by deleting generated and temporary files that can be safely removed, thus helping in keeping the project directory clean and well-organized.
+2. **Project Cleaning**: This tool also offers the functionality to clean Unreal Engine projects by deleting generated and temporary files that can be safely removed.
+
+## Screenshots
+
+![UEPU Screenshot (gif)](https://media.giphy.com/media/hhvmxUp8zRKqeuvvuD/giphy.gif)
 
 ## How to Use
-The tool is designed to be user-friendly and easy to use. It displays a menu with the available options for the user to choose from. The options are:
+Once launched, the tool will display a menu with the available options for the user to choose from. The options are:
 
 1. **Rename project**: Allows you to input an existing project's name and the new name you want to give to the project. The tool then proceeds to rename the project and change references within files.
 
@@ -18,8 +22,8 @@ The tool is designed to be user-friendly and easy to use. It displays a menu wit
 Once an option is chosen, the user is then asked to input the necessary information depending on the chosen operation. The tool then handles the rest.
 
 ## Where to Get
-To get a working version of this tool, please visit the [Releases](releases) Page.  
-Simply download the provided binaries for your platform, and you're good to go!
+To get a working version of this tool, please visit the Releases page.  
+Simply download the provided binary for your platform, and you're good to go!
 
 ## Building from Source
 Binaries from the interwebs not your thing? No problem!  
