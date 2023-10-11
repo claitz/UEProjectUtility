@@ -22,7 +22,7 @@ int main()
                        "\\ \\ \\_\\ \\  \\ \\  __\\   \\ \\  _-/ \\ \\ \\_\\ \\  \n"
                        " \\ \\_____\\  \\ \\_____\\  \\ \\_\\    \\ \\_____\\ \n"
                        "  \\/_____/   \\/_____/   \\/_/     \\/_____/ \n", "blue");
-        printToConsole("=========== UEProjectUtility v0.3 ===========", "blue");
+        printToConsole("=========== UEProjectUtility v0.4 ===========", "blue");
         printToConsole("1. Rename project");
         printToConsole("2. Clean project");
         printToConsole("3. Exit");
