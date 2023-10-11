@@ -22,6 +22,8 @@ bool validateAndSetPath(fs::path &basePath, const std::string &basePathStr) {
 void cleanProject(const fs::path& projectPath)
 {
     fs::path slnPath = projectPath.parent_path() / (projectPath.filename().string() + ".sln");
+
+    // Array of directories to clean
     std::array<fs::path, 7> dirsToClean = {
             projectPath / ".vs",
             projectPath / "Build",
@@ -32,11 +34,15 @@ void cleanProject(const fs::path& projectPath)
             projectPath / "Saved"
     };
 
+    // Delete all directories in the array
     for (const auto& dir : dirsToClean) {
         if (fs::exists(dir)) {
             fs::remove_all(dir);
         }
     }
+
+    // Delete the solution file
+    fs::remove(slnPath);
 }
 
 bool validateUProject(const fs::path &basePath) {
